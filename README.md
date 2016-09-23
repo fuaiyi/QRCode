@@ -9,131 +9,6 @@
 ![](media/14745329572661/14745332697421.jpg)
 
 
-设置扫描会话,图层和输入输出   
-   
-
-   
-   
-   
-```
-   //设置捕捉设备
-        let device = AVCaptureDevice.defaultDevice(withMediaType: AVMediaTypeVideo)
-        
-        do
-        {
-            //设置设备输入输出
-            let input = try AVCaptureDeviceInput(device: device)
-            
-            let output = AVCaptureMetadataOutput()
-            output.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
-            
-            //设置会话
-            let  scanSession = AVCaptureSession()
-            scanSession.canSetSessionPreset(AVCaptureSessionPresetHigh)
-            
-            if scanSession.canAddInput(input)
-            {
-                scanSession.addInput(input)
-            }
-            
-            if scanSession.canAddOutput(output)
-            {
-                scanSession.addOutput(output)
-            }
-            
-            //设置扫描类型(二维码和条形码)
-            output.metadataObjectTypes = [
-            AVMetadataObjectTypeQRCode,
-            AVMetadataObjectTypeCode39Code,
-            AVMetadataObjectTypeCode128Code,
-            AVMetadataObjectTypeCode39Mod43Code,
-            AVMetadataObjectTypeEAN13Code,
-            AVMetadataObjectTypeEAN8Code,
-            AVMetadataObjectTypeCode93Code]
-            
-            //预览图层
-            let scanPreviewLayer = AVCaptureVideoPreviewLayer(session:scanSession)
-            scanPreviewLayer?.videoGravity = AVLayerVideoGravityResizeAspectFill
-            scanPreviewLayer?.frame = view.layer.bounds
-            
-            view.layer.insertSublayer(scanPreviewLayer!, at: 0)
-            
-            //自动对焦
-            if (device?.isFocusModeSupported(.autoFocus))!
-            {
-                do { try input.device.lockForConfiguration() } catch{ }
-                input.device.focusMode = .autoFocus
-                input.device.unlockForConfiguration()
-            }
-            
-            //设置扫描区域
-            NotificationCenter.default.addObserver(forName: NSNotification.Name.AVCaptureInputPortFormatDescriptionDidChange, object: nil, queue: nil, using: {[weak self] (noti) in
-                    output.rectOfInterest = (scanPreviewLayer?.metadataOutputRectOfInterest(for: self!.scanPane.frame))!
-            })
-            
-            //保存会话
-            self.scanSession = scanSession
-            
-        }
-        catch
-        {
-            //摄像头不可用
-            
-            Tool.confirm(title: "温馨提示", message: "摄像头不可用", controller: self)
-            
-            return
-        }
-```
-
-开始扫描
-
-```
-       if !scanSession.isRunning
-        {
-            scanSession.startRunning()
-        }
-```
-
-扫描结果在代理方法中
-
-
-```
-//扫描捕捉完成
-extension ScanCodeViewController : AVCaptureMetadataOutputObjectsDelegate
-{
-    
-    func captureOutput(_ captureOutput: AVCaptureOutput!, didOutputMetadataObjects metadataObjects: [Any]!, from connection: AVCaptureConnection!)
-    {
-        
-        //停止扫描
-        self.scanLine.layer.removeAllAnimations()
-        self.scanSession!.stopRunning()
-        
-        //播放声音
-        Tool.playAlertSound(sound: "noticeMusic.caf")
-        
-        //扫完完成
-        if metadataObjects.count > 0
-        {
-            
-            if let resultObj = metadataObjects.first as? AVMetadataMachineReadableCodeObject
-            {
-                
-                Tool.confirm(title: "扫描结果", message: resultObj.stringValue, controller: self,handler: { (_) in
-                    //继续扫描
-                    self.startScan()
-                })
-                
-            }
-            
-        }
-        
-    }
-    
-}
-
-```
-
 > 2.二维码生成
     
 ![](media/14745329572661/14745366915132.jpg)
@@ -144,6 +19,38 @@ extension ScanCodeViewController : AVCaptureMetadataOutputObjectsDelegate
 ![](media/14745329572661/14745377887454.jpg)
 
 
+使用(建议使用子线程)
+
+
+```  
+DispatchQueue.global().async {
+                
+let image = content.generateQRCodeWithLogo(logo: self.logoImageView.image)
+                DispatchQueue.main.async(execute: {
+                    self.QRCodeImageView.image = image
+                })
+                
+            }
+```
+
+
+
+```
+DispatchQueue.global().async {
+            let recognizeResult = self.sourceImage?.recognizeQRCode()
+            let result = recognizeResult?.characters.count > 0 ? recognizeResult : "无法识别"
+            DispatchQueue.main.async {
+                Tool.confirm(title: "扫描结果", message: result, controller: self)
+                self.activityIndicatoryView.stopAnimating()
+            }
+        }
+```
+
+
+
+
+
+-------
 封装接口:
 
 ```
@@ -239,32 +146,6 @@ extension ScanCodeViewController : AVCaptureMetadataOutputObjectsDelegate
 ```
 
 
-使用(建议使用子线程)
-
-
-```  
-DispatchQueue.global().async {
-                
-let image = content.generateQRCodeWithLogo(logo: self.logoImageView.image)
-                DispatchQueue.main.async(execute: {
-                    self.QRCodeImageView.image = image
-                })
-                
-            }
-```
-
-
-
-```
-DispatchQueue.global().async {
-            let recognizeResult = self.sourceImage?.recognizeQRCode()
-            let result = recognizeResult?.characters.count > 0 ? recognizeResult : "无法识别"
-            DispatchQueue.main.async {
-                Tool.confirm(title: "扫描结果", message: result, controller: self)
-                self.activityIndicatoryView.stopAnimating()
-            }
-        }
-```
 
 
 详情请查看我的博客:[二维码扫描、生成、识别 (swift3.0)](http://www.jianshu.com/p/93d7a4b9b8f6)  
