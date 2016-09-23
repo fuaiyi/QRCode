@@ -78,15 +78,18 @@ class ScanCodeViewController: UIViewController
     func setupScanSession()
     {
         
+        //设置捕捉设备
         let device = AVCaptureDevice.defaultDevice(withMediaType: AVMediaTypeVideo)
         
         do
         {
+            //设置设备输入输出
             let input = try AVCaptureDeviceInput(device: device)
             
             let output = AVCaptureMetadataOutput()
             output.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
             
+            //设置会话
             let  scanSession = AVCaptureSession()
             scanSession.canSetSessionPreset(AVCaptureSessionPresetHigh)
             
@@ -100,6 +103,7 @@ class ScanCodeViewController: UIViewController
                 scanSession.addOutput(output)
             }
             
+            //设置扫描类型(二维码和条形码)
             output.metadataObjectTypes = [
             AVMetadataObjectTypeQRCode,
             AVMetadataObjectTypeCode39Code,
@@ -109,12 +113,14 @@ class ScanCodeViewController: UIViewController
             AVMetadataObjectTypeEAN8Code,
             AVMetadataObjectTypeCode93Code]
             
+            //预览图层
             let scanPreviewLayer = AVCaptureVideoPreviewLayer(session:scanSession)
             scanPreviewLayer?.videoGravity = AVLayerVideoGravityResizeAspectFill
             scanPreviewLayer?.frame = view.layer.bounds
             
             view.layer.insertSublayer(scanPreviewLayer!, at: 0)
             
+            //自动对焦
             if (device?.isFocusModeSupported(.autoFocus))!
             {
                 do { try input.device.lockForConfiguration() } catch{ }
@@ -122,10 +128,12 @@ class ScanCodeViewController: UIViewController
                 input.device.unlockForConfiguration()
             }
             
+            //设置扫描区域
             NotificationCenter.default.addObserver(forName: NSNotification.Name.AVCaptureInputPortFormatDescriptionDidChange, object: nil, queue: nil, using: {[weak self] (noti) in
                     output.rectOfInterest = (scanPreviewLayer?.metadataOutputRectOfInterest(for: self!.scanPane.frame))!
             })
             
+            //保存会话
             self.scanSession = scanSession
             
         }
@@ -143,6 +151,7 @@ class ScanCodeViewController: UIViewController
     //MARK: -
     //MARK: Target Action
     
+    //闪光灯
     @IBAction func light(_ sender: UIButton)
     {
         
@@ -152,6 +161,7 @@ class ScanCodeViewController: UIViewController
         
     }
     
+    //相册
     @IBAction func photo()
     {
         
@@ -178,6 +188,7 @@ class ScanCodeViewController: UIViewController
     //MARK: -
     //MARK: Private Methods
     
+    //开始扫描
     fileprivate func startScan()
     {
     
@@ -193,6 +204,7 @@ class ScanCodeViewController: UIViewController
         
     }
     
+    //扫描动画
     private func scanAnimation() -> CABasicAnimation
     {
     
@@ -269,15 +281,18 @@ class ScanCodeViewController: UIViewController
 //MARK: -
 //MARK: AVCaptureMetadataOutputObjects Delegate
 
+//扫描捕捉完成
 extension ScanCodeViewController : AVCaptureMetadataOutputObjectsDelegate
 {
     
     func captureOutput(_ captureOutput: AVCaptureOutput!, didOutputMetadataObjects metadataObjects: [Any]!, from connection: AVCaptureConnection!)
     {
         
+        //停止扫描
         self.scanLine.layer.removeAllAnimations()
         self.scanSession!.stopRunning()
         
+        //播放声音
         Tool.playAlertSound(sound: "noticeMusic.caf")
         
         //扫完完成
@@ -288,6 +303,7 @@ extension ScanCodeViewController : AVCaptureMetadataOutputObjectsDelegate
             {
                 
                 Tool.confirm(title: "扫描结果", message: resultObj.stringValue, controller: self,handler: { (_) in
+                    //继续扫描
                     self.startScan()
                 })
                 

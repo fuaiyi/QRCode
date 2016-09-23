@@ -152,8 +152,8 @@ extension String
         
         logoBorderImagae.draw(in: logoFrame)
     
-        let QRCodeImage = UIGraphicsGetImageFromCurrentImageContext();
-        UIGraphicsEndImageContext();
+        let QRCodeImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
         
         
         
