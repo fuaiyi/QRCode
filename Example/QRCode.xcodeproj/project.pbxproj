@@ -365,6 +365,7 @@
 				DEVELOPMENT_TEAM = 6Z35AGZ725;
 				GCC_WARN_INHIBIT_ALL_WARNINGS = YES;
 				INFOPLIST_FILE = "$(SRCROOT)/QRCode/AppEntrance/AppSource/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = gaofu.QRCode;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -380,6 +381,7 @@
 				DEVELOPMENT_TEAM = 6Z35AGZ725;
 				GCC_WARN_INHIBIT_ALL_WARNINGS = YES;
 				INFOPLIST_FILE = "$(SRCROOT)/QRCode/AppEntrance/AppSource/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = gaofu.QRCode;
 				PRODUCT_NAME = "$(TARGET_NAME)";

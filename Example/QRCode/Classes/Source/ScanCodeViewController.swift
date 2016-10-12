@@ -78,11 +78,10 @@ class ScanCodeViewController: UIViewController
     func setupScanSession()
     {
         
-        //设置捕捉设备
-        let device = AVCaptureDevice.defaultDevice(withMediaType: AVMediaTypeVideo)
-        
         do
         {
+            //设置捕捉设备
+            let device = AVCaptureDevice.defaultDevice(withMediaType: AVMediaTypeVideo)
             //设置设备输入输出
             let input = try AVCaptureDeviceInput(device: device)
             
@@ -115,23 +114,17 @@ class ScanCodeViewController: UIViewController
             
             //预览图层
             let scanPreviewLayer = AVCaptureVideoPreviewLayer(session:scanSession)
-            scanPreviewLayer?.videoGravity = AVLayerVideoGravityResizeAspectFill
-            scanPreviewLayer?.frame = view.layer.bounds
+            scanPreviewLayer!.videoGravity = AVLayerVideoGravityResizeAspectFill
+            scanPreviewLayer!.frame = view.layer.bounds
             
             view.layer.insertSublayer(scanPreviewLayer!, at: 0)
             
-            //自动对焦
-            if (device?.isFocusModeSupported(.autoFocus))!
-            {
-                do { try input.device.lockForConfiguration() } catch{ }
-                input.device.focusMode = .autoFocus
-                input.device.unlockForConfiguration()
-            }
-            
             //设置扫描区域
-            NotificationCenter.default.addObserver(forName: NSNotification.Name.AVCaptureInputPortFormatDescriptionDidChange, object: nil, queue: nil, using: {[weak self] (noti) in
-                    output.rectOfInterest = (scanPreviewLayer?.metadataOutputRectOfInterest(for: self!.scanPane.frame))!
+            NotificationCenter.default.addObserver(forName: NSNotification.Name.AVCaptureInputPortFormatDescriptionDidChange, object: nil, queue: nil, using: { (noti) in
+                output.rectOfInterest = (scanPreviewLayer?.metadataOutputRectOfInterest(for: self.scanPane.frame))!
             })
+            
+            
             
             //保存会话
             self.scanSession = scanSession
@@ -269,7 +262,6 @@ class ScanCodeViewController: UIViewController
     
     deinit
     {
-        
         ///移除通知
         NotificationCenter.default.removeObserver(self)
         
